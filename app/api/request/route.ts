@@ -1,10 +1,11 @@
 // Turnover requests from the site's form, delivered to Garrett's inbox through Resend.
 // Needs RESEND_API_KEY and BOOKING_TO_EMAIL in the Vercel project settings.
-// BOOKING_FROM_EMAIL is optional: until a domain is verified in Resend, the default
-// test sender can only deliver to the Resend account's own address.
+// BOOKING_FROM_EMAIL is optional. The default sender uses the already verified
+// provisionloop.org domain so production delivery is not tied to resend.dev testing limits.
 
 const AREAS = new Set(['West End', 'Seawall', 'East End', 'Jamaica Beach', 'Bolivar', 'Other Galveston Island area'])
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const DEFAULT_FROM = 'Seawall Turnover <bookings@provisionloop.org>'
 
 function text(value: unknown, max: number) {
   return typeof value === 'string' ? value.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, max) : ''
@@ -77,7 +78,7 @@ export async function POST(request: Request) {
     method: 'POST',
     headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
     body: JSON.stringify({
-      from: process.env.BOOKING_FROM_EMAIL || 'Seawall Turnover Co. <onboarding@resend.dev>',
+      from: process.env.BOOKING_FROM_EMAIL || DEFAULT_FROM,
       to: [to],
       reply_to: email,
       subject: `Turnover request: ${name} · ${area} · ${bedrooms} BR${storm ? ' · Storm-Ready' : ''}`,
